@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GK Farm House PRO</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<style>
+body {font-family: Arial; margin:0; background:#eef2f3;}
+header {background:#0a7f2e; color:white; padding:15px; text-align:center; font-size:20px;}
+.card {background:white; margin:12px; padding:15px; border-radius:12px; box-shadow:0 3px 8px rgba(0,0,0,0.1);}
+input,select {width:100%; padding:10px; margin:6px 0;}
+button {width:100%; padding:12px; background:#0a7f2e; color:white; border:none; border-radius:8px;}
+.delete {background:red;}
+.edit {background:orange;}
+.grid {display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+</style>
+</head>
+
+<body>
+
+<header>🐔 GK Farm House PRO</header>
+
+<!-- DASHBOARD -->
+<div class="card">
+<h3>Dashboard</h3>
+<div class="grid">
+<p>Income: ₹<span id="income">0</span></p>
+<p>Expense: ₹<span id="expense">0</span></p>
+<p>Profit: ₹<span id="profit">0</span></p>
+<p>Avg Daily Profit: ₹<span id="avgProfit">0</span></p>
+</div>
+<canvas id="mainChart"></canvas>
+</div>
+
+<!-- ADD ENTRY -->
+<div class="card">
+<h3>Add Entry</h3>
+
+<input type="date" id="date">
+
+<select id="type">
+<option>Income</option>
+<option>Expense</option>
+</select>
+
+<select id="category" onchange="toggleEggInputs()">
+<option>Eggs</option>
+<option>Feed</option>
+<option>Medicine</option>
+<option>Other</option>
+</select>
+
+<div id="eggInputs">
+<input type="number" id="qty" placeholder="Egg Quantity">
+<input type="number" id="price" placeholder="Price per Egg">
+</div>
+
+<input type="number" id="amount" placeholder="Amount">
+
+<button onclick="addEntry()">Add Entry</button>
+</div>
+
+<!-- RECORDS -->
+<div class="card">
+<h3>Records</h3>
+<table id="records"></table>
+</div>
+
+<!-- ANALYTICS -->
+<div class="card">
+<h3>Advanced Analytics</h3>
+
+<p>Total Eggs Sold: <span id="totalEggs">0</span></p>
+<p>Egg Revenue: ₹<span id="eggRevenue">0</span></p>
+<p>Avg Egg Price: ₹<span id="avgEggPrice">0</span></p>
+
+<p>Total Feed Used: <span id="feedTotal">0</span> Kg</p>
+
+<canvas id="trendChart"></canvas>
+</div>
+
+<!-- BIRD SUMMARY -->
+<div class="card">
+<h3>Bird Summary</h3>
+<input type="number" id="totalBirds" placeholder="Total Birds">
+<input type="number" id="deceased" placeholder="Deceased">
+<button onclick="saveBirds()">Save</button>
+
+<p>Total: <span id="bTotal">0</span></p>
+<p>Remaining: <span id="bRemain">0</span></p>
+</div>
+
+<!-- MEDICINE -->
+<div class="card">
+<h3>Medicine Log</h3>
+<input type="date" id="medDate">
+<input type="text" id="medName" placeholder="Medicine Name">
+<button onclick="addMed()">Add</button>
+<ul id="medList"></ul>
+</div>
+
+<!-- EXPORT -->
+<div class="card">
+<button onclick="exportPDF()">Export Weekly PDF</button>
+</div>
+
+<script>
+
+let data = JSON.parse(localStorage.getItem("farm")) || [];
+let feeds = JSON.parse(localStorage.getItem("feeds")) || [];
+let meds = JSON.parse(localStorage.getItem("meds")) || [];
+
+function save(){
+localStorage.setItem("farm", JSON.stringify(data));
+localStorage.setItem("feeds", JSON.stringify(feeds));
+localStorage.setItem("meds", JSON.stringify(meds));
+}
+
+function toggleEggInputs(){
+if(category.value==="Eggs"){
+eggInputs.style.display="block";
+amount.style.display="none";
+}else{
+eggInputs.style.display="none";
+amount.style.display="block";
+}
+}
+
+function addEntry(){
+let amt, q=0, p=0;
+
+if(category.value==="Eggs"){
+q=+qty.value;
+p=+price.value;
+amt=q*p;
+}else{
+amt=+amount.value;
+}
+
+data.push({
+date:date.value,
+type:type.value,
+category:category.value,
+amount:amt,
+qty:q,
+price:p
+});
+
+save();
+render();
+}
+
+function deleteEntry(i){
+data.splice(i,1);
+save();
+render();
+}
+
+function editEntry(i){
+let e=data[i];
+date.value=e.date;
+type.value=e.type;
+category.value=e.category;
+amount.value=e.amount;
+deleteEntry(i);
+toggleEggInputs();
+}
+
+function render(){
+
+let inc=0, exp=0;
+let totalEggs=0, eggRevenue=0;
+
+records.innerHTML="";
+
+data.forEach((e,i)=>{
+
+if(e.type==="Income") inc+=e.amount;
+else exp+=e.amount;
+
+if(e.category==="Eggs"){
+totalEggs+=e.qty || 0;
+eggRevenue+=e.amount;
+}
+
+records.innerHTML+=`
+<tr>
+<td>${e.date}</td>
+<td>${e.type}</td>
+<td>${e.amount}</td>
+<td><button class="edit" onclick="editEntry(${i})">E</button></td>
+<td><button class="delete" onclick="deleteEntry(${i})">X</button></td>
+</tr>`;
+});
+
+let profit=inc-exp;
+
+income.innerText=inc;
+expense.innerText=exp;
+profit.innerText=profit;
+avgProfit.innerText=(data.length ? (profit/data.length).toFixed(0):0);
+
+totalEggsEl.innerText=totalEggs;
+eggRevenueEl.innerText=eggRevenue;
+avgEggPrice.innerText=(totalEggs? (eggRevenue/totalEggs).toFixed(2):0);
+
+feedTotal.innerText=feeds.reduce((a,b)=>a+b,0);
+
+drawCharts(inc,exp);
+drawTrend();
+
+}
+
+function drawCharts(inc,exp){
+new Chart(mainChart,{
+type:'bar',
+data:{labels:['Income','Expense'],datasets:[{data:[inc,exp]}]}
+});
+}
+
+function drawTrend(){
+
+let last7=data.slice(-7);
+let labels=last7.map(e=>e.date);
+let values=last7.map(e=>e.amount);
+
+new Chart(trendChart,{
+type:'line',
+data:{labels:labels,datasets:[{data:values}]}
+});
+}
+
+function saveBirds(){
+let total=+totalBirds.value;
+let dead=+deceased.value;
+bTotal.innerText=total;
+bRemain.innerText=total-dead;
+}
+
+function addMed(){
+meds.push({date:medDate.value,name:medName.value});
+medList.innerHTML+=`<li>${medDate.value} - ${medName.value}</li>`;
+save();
+}
+
+function exportPDF(){
+const {jsPDF}=window.jspdf;
+let doc=new jsPDF();
+
+doc.text("GK Farm PRO Report",10,10);
+
+let y=20;
+data.forEach(e=>{
+doc.text(`${e.date} - ${e.category} - ${e.amount}`,10,y);
+y+=8;
+});
+
+doc.text("Total Profit: "+(income.innerText-expense.innerText),10,y+10);
+
+doc.save("Farm_Report.pdf");
+}
+
+render();
+
+</script>
+
+</body>
+</html>
