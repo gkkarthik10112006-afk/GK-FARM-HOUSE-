@@ -37,20 +37,168 @@ canvas {margin-top:15px; background:white; border-radius:10px; padding:10px;}
 <header>🐔 GK Farm House PRO</header>
 
 <!-- DASHBOARD -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GK Farm House Dashboard</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+body {
+    font-family: Arial;
+    background: #f4f6f9;
+    margin: 0;
+}
+
+.container {
+    padding: 20px;
+}
+
+.cards {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+}
+
+.card {
+    background: white;
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.card h4 {
+    margin: 0;
+    color: gray;
+}
+
+.card h2 {
+    margin: 10px 0 0;
+}
+
+.green { color: green; }
+.red { color: red; }
+.blue { color: blue; }
+.orange { color: orange; }
+
+.chart-box {
+    background: white;
+    margin-top: 20px;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+.bottom-cards {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+    margin-top: 20px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>GK Farm House Dashboard</h2>
+
+<!-- TOP CARDS -->
+<div class="cards">
+
 <div class="card">
-<h3>Dashboard</h3>
-
-<div class="grid">
-<div class="kpi income">Income ₹<span id="income">0</span></div>
-<div class="kpi expense">Expense ₹<span id="expense">0</span></div>
-<div class="kpi profit">Profit ₹<span id="profit">0</span></div>
-<div class="kpi avg">Avg ₹<span id="avgProfit">0</span></div>
+<h4>Income</h4>
+<h2 class="green">₹ 2,34,000</h2>
 </div>
 
-<canvas id="barChart"></canvas>
-<canvas id="pieChart"></canvas>
+<div class="card">
+<h4>Expenses</h4>
+<h2 class="red">₹ 71,000</h2>
 </div>
 
+<div class="card">
+<h4>Average Profit</h4>
+<h2 class="blue">₹ 1,63,000</h2>
+</div>
+
+<div class="card">
+<h4>Net Profit</h4>
+<h2 class="orange">₹ 1,50,000</h2>
+</div>
+
+</div>
+
+<!-- CHART -->
+<div class="chart-box">
+<canvas id="myChart"></canvas>
+</div>
+
+<!-- BOTTOM STATS -->
+<div class="bottom-cards">
+
+<div class="card">
+<h4>Income</h4>
+<h2>₹ 5,456</h2>
+</div>
+
+<div class="card">
+<h4>Expenses</h4>
+<h2>₹ 4,764</h2>
+</div>
+
+<div class="card">
+<h4>Spending</h4>
+<h2>₹ 1.5M</h2>
+</div>
+
+<div class="card">
+<h4>Total</h4>
+<h2>₹ 31,564</h2>
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+const ctx = document.getElementById('myChart');
+
+new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: ['Jan 1','Jan 2','Jan 3','Jan 4','Jan 5','Jan 6','Jan 7'],
+        datasets: [
+            {
+                label: 'Income',
+                data: [500, 700, 600, 800, 750, 900, 1000],
+                backgroundColor: 'green'
+            },
+            {
+                label: 'Expenses',
+                data: [300, 400, 350, 500, 450, 600, 650],
+                backgroundColor: 'red'
+            }
+        ]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'top'
+            }
+        }
+    }
+});
+
+</script>
+
+</body>
+</html>
 <!-- ADD ENTRY -->
 <div class="card">
 <h3>Add Entry</h3>
