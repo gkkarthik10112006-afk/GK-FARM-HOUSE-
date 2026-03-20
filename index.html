@@ -3,66 +3,113 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GK Farm House PRO MAX</title>
+<title>GK Farm House PRO</title>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <style>
-body { font-family: 'Segoe UI'; background:#0f172a; color:white; margin:0;}
-.header { display:flex; align-items:center; padding:15px; background:#020617;}
-.header img { width:45px; margin-right:10px;}
-.container { padding:15px;}
-
-.cards { display:flex; gap:10px; flex-wrap:wrap;}
-.card { flex:1; padding:15px; border-radius:12px; text-align:center;}
-.profit{background:#065f46;}
-.income{background:#92400e;}
-.expense{background:#7f1d1d;}
-
-input,select{
-width:100%; padding:10px; margin:5px 0;
-background:#1e293b; border:none; border-radius:8px; color:white;
+body {
+    font-family: 'Segoe UI', sans-serif;
+    margin: 0;
+    background: #0f172a;
+    color: white;
 }
 
-button{
-background:#2563eb; padding:10px; border:none;
-border-radius:10px; width:100%; margin-top:10px;
+.header {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    background: #020617;
+}
+.header img { width: 50px; margin-right: 10px; }
+
+.container { padding: 15px; }
+
+.cards { display: flex; gap: 10px; flex-wrap: wrap; }
+
+.card {
+    flex: 1;
+    padding: 15px;
+    border-radius: 12px;
+    text-align: center;
+    font-weight: bold;
 }
 
-table{width:100%; margin-top:20px; border-collapse:collapse;}
-th,td{padding:10px; border-bottom:1px solid #1e293b; text-align:center;}
+.profit { background: #065f46; }
+.income { background: #92400e; }
+.expense { background: #7f1d1d; }
+
+.form, .birds {
+    margin-top: 20px;
+    background: #020617;
+    padding: 15px;
+    border-radius: 12px;
+}
+
+input, select {
+    width: 100%;
+    padding: 10px;
+    margin: 5px 0;
+    border-radius: 8px;
+    border: none;
+    background: #1e293b;
+    color: white;
+}
+
+button {
+    background: #2563eb;
+    padding: 10px;
+    border: none;
+    width: 100%;
+    border-radius: 10px;
+    color: white;
+    margin-top: 10px;
+}
+
+table {
+    width: 100%;
+    margin-top: 20px;
+    border-collapse: collapse;
+}
+th, td {
+    padding: 10px;
+    border-bottom: 1px solid #1e293b;
+    text-align: center;
+}
 </style>
 </head>
 
 <body>
 
 <div class="header">
-<img src="https://cdn-icons-png.flaticon.com/512/616/616408.png">
-<h2>GK FARM HOUSE</h2>
+    <img src="https://cdn-icons-png.flaticon.com/512/616/616408.png">
+    <h2>GK FARM HOUSE</h2>
 </div>
 
 <div class="container">
 
 <div class="cards">
-<div class="card profit">Net Profit<h2 id="profit">₹0</h2></div>
-<div class="card income">Income<h2 id="income">₹0</h2></div>
-<div class="card expense">Expenses<h2 id="expense">₹0</h2></div>
+    <div class="card profit">Net Profit <h2 id="profit">₹0</h2></div>
+    <div class="card income">Income <h2 id="income">₹0</h2></div>
+    <div class="card expense">Expenses <h2 id="expense">₹0</h2></div>
 </div>
 
 <canvas id="chart"></canvas>
 
-<h3>Entries</h3>
-<input type="date" id="date">
-<select id="type">
-<option value="income">Income</option>
-<option value="expense">Expense</option>
-</select>
-<input id="particulars" placeholder="Particulars">
-<input id="qty" type="number" placeholder="Egg Qty">
-<input id="price" type="number" placeholder="Price">
-<input id="amount" readonly placeholder="Amount">
-<button onclick="addEntry()">Add Entry</button>
+<div class="form">
+    <h3>Entries</h3>
+    <input type="date" id="date">
+    <select id="type">
+        <option value="income">Income</option>
+        <option value="expense">Expense</option>
+    </select>
+    <input type="text" id="particulars" placeholder="Particulars">
+    <input type="number" id="qty" placeholder="Egg Quantity">
+    <input type="number" id="price" placeholder="Price per Egg">
+    <input type="number" id="amount" placeholder="Amount" readonly>
+    <button onclick="addEntry()">Add Entry</button>
+</div>
 
 <table>
 <thead>
@@ -74,128 +121,122 @@ th,td{padding:10px; border-bottom:1px solid #1e293b; text-align:center;}
 <tbody id="tableBody"></tbody>
 </table>
 
-<h3>Bird Management</h3>
-<input id="totalBirds" placeholder="Total Birds">
-<input id="adult" placeholder="Adults">
-<input id="chicks" placeholder="Chicks">
-<input id="mortality" placeholder="Mortality">
-<input id="sale" placeholder="Sale">
+<div class="birds">
+    <h3>Bird Count</h3>
+    <input type="number" id="totalBirds" placeholder="Total Birds">
+    <input type="number" id="adult" placeholder="Adults">
+    <input type="number" id="chicks" placeholder="Chicks">
+    <input type="number" id="mortality" placeholder="Mortality">
+    <input type="number" id="sale" placeholder="Sale">
+</div>
 
-<button onclick="downloadPDF()">Export Full Report</button>
+<button onclick="downloadPDF()">Download Full Report PDF</button>
 
 </div>
 
 <script>
-let entries = JSON.parse(localStorage.getItem("entries")) || [];
+let income = 0, expense = 0, entries = [];
 
-let income=0, expense=0;
+document.getElementById("qty").addEventListener("input", calc);
+document.getElementById("price").addEventListener("input", calc);
 
-/* AUTO AMOUNT */
-qty.oninput = price.oninput = () => {
-amount.value = (qty.value * price.value) || 0;
-};
-
-/* ADD ENTRY */
-function addEntry(){
-if(!date.value || !particulars.value) return alert("Fill details");
-
-let entry={
-date:date.value,
-type:type.value,
-part:particulars.value,
-qty:Number(qty.value),
-price:Number(price.value),
-amount:Number(amount.value)
-};
-
-entries.push(entry);
-localStorage.setItem("entries", JSON.stringify(entries));
-
-render();
+function calc() {
+    let q = qty.value, p = price.value;
+    amount.value = q * p || 0;
 }
 
-/* CALCULATE + RENDER */
-function render(){
-income=0; expense=0;
+function addEntry() {
+    let data = {
+        date: date.value,
+        type: type.value,
+        part: particulars.value,
+        qty: qty.value,
+        price: price.value,
+        amount: Number(amount.value)
+    };
 
-entries.forEach(e=>{
-if(e.type==="income") income+=e.amount;
-else expense+=e.amount;
-});
+    entries.push(data);
 
-incomeEl.innerText="₹"+income;
-expenseEl.innerText="₹"+expense;
-profitEl.innerText="₹"+(income-expense);
+    if(data.type === "income") income += data.amount;
+    else expense += data.amount;
 
-/* TABLE */
-tableBody.innerHTML="";
-entries.forEach(e=>{
-tableBody.innerHTML+=`
-<tr>
-<td>${e.date}</td>
-<td>${e.type}</td>
-<td>${e.part}</td>
-<td>${e.qty}</td>
-<td>${e.price}</td>
-<td>${e.amount}</td>
-</tr>`;
-});
-
-/* WEEKLY GRAPH */
-let weeks={};
-
-entries.forEach(e=>{
-let week=new Date(e.date).getWeek();
-if(!weeks[week]) weeks[week]={inc:0,exp:0};
-
-if(e.type==="income") weeks[week].inc+=e.amount;
-else weeks[week].exp+=e.amount;
-});
-
-chart.data.labels=Object.keys(weeks);
-chart.data.datasets[0].data=Object.values(weeks).map(w=>w.inc);
-chart.data.datasets[1].data=Object.values(weeks).map(w=>w.exp);
-chart.update();
+    updateUI();
 }
 
-/* WEEK FUNCTION */
-Date.prototype.getWeek=function(){
-let d=new Date(this.getFullYear(),0,1);
-return Math.ceil((((this-d)/86400000)+d.getDay()+1)/7);
-};
+function updateUI() {
+    incomeEl = document.getElementById("income");
+    expenseEl = document.getElementById("expense");
+    profitEl = document.getElementById("profit");
 
-let chart=new Chart(document.getElementById("chart"),{
-type:"bar",
-data:{
-labels:[],
-datasets:[
-{label:"Income",data:[],backgroundColor:"black"},
-{label:"Expenses",data:[],backgroundColor:"red"}
-]
-}
-});
+    incomeEl.innerText = "₹" + income;
+    expenseEl.innerText = "₹" + expense;
+    profitEl.innerText = "₹" + (income - expense);
 
-/* PDF */
-function downloadPDF(){
-const { jsPDF } = window.jspdf;
-let doc=new jsPDF();
+    let body = document.getElementById("tableBody");
+    body.innerHTML = "";
+    entries.forEach(e => {
+        body.innerHTML += `
+        <tr>
+        <td>${e.date}</td>
+        <td>${e.type}</td>
+        <td>${e.part}</td>
+        <td>${e.qty}</td>
+        <td>${e.price}</td>
+        <td>${e.amount}</td>
+        </tr>`;
+    });
 
-doc.text("GK FARM HOUSE REPORT",20,20);
-
-doc.text(`Income: ₹${income}`,20,40);
-doc.text(`Expense: ₹${expense}`,20,50);
-doc.text(`Profit: ₹${income-expense}`,20,60);
-
-let y=80;
-entries.forEach(e=>{
-doc.text(`${e.date} ${e.type} ${e.part} ₹${e.amount}`,20,y);
-y+=8;
-});
-
-doc.save("Farm_Report.pdf");
+    chart.data.datasets[0].data[0] = income;
+    chart.data.datasets[1].data[0] = expense;
+    chart.update();
 }
 
-render();
+let chart = new Chart(document.getElementById("chart"), {
+    type: 'bar',
+    data: {
+        labels: ['Weekly'],
+        datasets: [
+            { label: 'Income', data: [0], backgroundColor: 'black' },
+            { label: 'Expenses', data: [0], backgroundColor: 'red' }
+        ]
+    }
+});
+
+/* PDF EXPORT */
+function downloadPDF() {
+    const { jsPDF } = window.jspdf;
+    let doc = new jsPDF();
+
+    doc.setFontSize(18);
+    doc.text("GK FARM HOUSE REPORT", 20, 20);
+
+    doc.setFontSize(12);
+    doc.text(`Income: ₹${income}`, 20, 40);
+    doc.text(`Expenses: ₹${expense}`, 20, 50);
+    doc.text(`Net Profit: ₹${income - expense}`, 20, 60);
+
+    doc.text("Bird Details:", 20, 80);
+    doc.text(`Total: ${totalBirds.value}`, 20, 90);
+    doc.text(`Adults: ${adult.value}`, 20, 100);
+    doc.text(`Chicks: ${chicks.value}`, 20, 110);
+    doc.text(`Mortality: ${mortality.value}`, 20, 120);
+    doc.text(`Sale: ${sale.value}`, 20, 130);
+
+    let y = 150;
+    doc.text("Entries:", 20, y);
+    y += 10;
+
+    entries.forEach(e => {
+        doc.text(
+            `${e.date} | ${e.type} | ${e.part} | ₹${e.amount}`,
+            20,
+            y
+        );
+        y += 10;
+    });
+
+    doc.save("GK_Farm_Report.pdf");
+}
 </script>
 
 </body>
