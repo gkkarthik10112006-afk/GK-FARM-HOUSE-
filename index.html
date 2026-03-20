@@ -3,447 +3,199 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GK Farm House PRO</title>
+<title>GK Farm House PRO MAX</title>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <style>
-body {font-family: Arial; margin:0; background:#eef2f3;}
-header {background:#0a7f2e; color:white; padding:15px; text-align:center; font-size:20px;}
+body { font-family: 'Segoe UI'; background:#0f172a; color:white; margin:0;}
+.header { display:flex; align-items:center; padding:15px; background:#020617;}
+.header img { width:45px; margin-right:10px;}
+.container { padding:15px;}
 
-.card {background:white; margin:12px; padding:15px; border-radius:12px; box-shadow:0 3px 8px rgba(0,0,0,0.1);}
+.cards { display:flex; gap:10px; flex-wrap:wrap;}
+.card { flex:1; padding:15px; border-radius:12px; text-align:center;}
+.profit{background:#065f46;}
+.income{background:#92400e;}
+.expense{background:#7f1d1d;}
 
-input,select {width:100%; padding:10px; margin:6px 0;}
-button {width:100%; padding:12px; background:#0a7f2e; color:white; border:none; border-radius:8px;}
+input,select{
+width:100%; padding:10px; margin:5px 0;
+background:#1e293b; border:none; border-radius:8px; color:white;
+}
 
-.delete {background:red;}
-.edit {background:orange;}
+button{
+background:#2563eb; padding:10px; border:none;
+border-radius:10px; width:100%; margin-top:10px;
+}
 
-.grid {display:grid; grid-template-columns:1fr 1fr; gap:10px;}
-
-.kpi {padding:12px; border-radius:10px; color:white; font-weight:bold;}
-.income {background:#00b894;}
-.expense {background:#d63031;}
-.profit {background:#0984e3;}
-.avg {background:#fdcb6e; color:black;}
-
-canvas {margin-top:15px; background:white; border-radius:10px; padding:10px;}
+table{width:100%; margin-top:20px; border-collapse:collapse;}
+th,td{padding:10px; border-bottom:1px solid #1e293b; text-align:center;}
 </style>
 </head>
 
 <body>
 
-<header>🐔 GK Farm House PRO</header>
-
-<!-- DASHBOARD -->
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GK Farm House Dashboard</title>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<style>
-body {
-    font-family: Arial;
-    background: #f4f6f9;
-    margin: 0;
-}
-
-.container {
-    padding: 20px;
-}
-
-.cards {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 15px;
-}
-
-.card {
-    background: white;
-    padding: 15px;
-    border-radius: 10px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-
-.card h4 {
-    margin: 0;
-    color: gray;
-}
-
-.card h2 {
-    margin: 10px 0 0;
-}
-
-.green { color: green; }
-.red { color: red; }
-.blue { color: blue; }
-.orange { color: orange; }
-
-.chart-box {
-    background: white;
-    margin-top: 20px;
-    padding: 20px;
-    border-radius: 10px;
-}
-
-.bottom-cards {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 15px;
-    margin-top: 20px;
-}
-</style>
-</head>
-
-<body>
+<div class="header">
+<img src="https://cdn-icons-png.flaticon.com/512/616/616408.png">
+<h2>GK FARM HOUSE</h2>
+</div>
 
 <div class="container">
 
-<h2>GK Farm House Dashboard</h2>
-
-<!-- TOP CARDS -->
 <div class="cards">
-
-<div class="card">
-<h4>Income</h4>
-<h2 class="green">₹ 2,34,000</h2>
+<div class="card profit">Net Profit<h2 id="profit">₹0</h2></div>
+<div class="card income">Income<h2 id="income">₹0</h2></div>
+<div class="card expense">Expenses<h2 id="expense">₹0</h2></div>
 </div>
 
-<div class="card">
-<h4>Expenses</h4>
-<h2 class="red">₹ 71,000</h2>
-</div>
+<canvas id="chart"></canvas>
 
-<div class="card">
-<h4>Average Profit</h4>
-<h2 class="blue">₹ 1,63,000</h2>
-</div>
+<h3>Entries</h3>
+<input type="date" id="date">
+<select id="type">
+<option value="income">Income</option>
+<option value="expense">Expense</option>
+</select>
+<input id="particulars" placeholder="Particulars">
+<input id="qty" type="number" placeholder="Egg Qty">
+<input id="price" type="number" placeholder="Price">
+<input id="amount" readonly placeholder="Amount">
+<button onclick="addEntry()">Add Entry</button>
 
-<div class="card">
-<h4>Net Profit</h4>
-<h2 class="orange">₹ 1,50,000</h2>
-</div>
+<table>
+<thead>
+<tr>
+<th>Date</th><th>Type</th><th>Particulars</th>
+<th>Qty</th><th>Price</th><th>Amount</th>
+</tr>
+</thead>
+<tbody id="tableBody"></tbody>
+</table>
 
-</div>
+<h3>Bird Management</h3>
+<input id="totalBirds" placeholder="Total Birds">
+<input id="adult" placeholder="Adults">
+<input id="chicks" placeholder="Chicks">
+<input id="mortality" placeholder="Mortality">
+<input id="sale" placeholder="Sale">
 
-<!-- CHART -->
-<div class="chart-box">
-<canvas id="myChart"></canvas>
-</div>
-
-<!-- BOTTOM STATS -->
-<div class="bottom-cards">
-
-<div class="card">
-<h4>Income</h4>
-<h2>₹ 5,456</h2>
-</div>
-
-<div class="card">
-<h4>Expenses</h4>
-<h2>₹ 4,764</h2>
-</div>
-
-<div class="card">
-<h4>Spending</h4>
-<h2>₹ 1.5M</h2>
-</div>
-
-<div class="card">
-<h4>Total</h4>
-<h2>₹ 31,564</h2>
-</div>
-
-</div>
+<button onclick="downloadPDF()">Export Full Report</button>
 
 </div>
 
 <script>
+let entries = JSON.parse(localStorage.getItem("entries")) || [];
 
-const ctx = document.getElementById('myChart');
+let income=0, expense=0;
 
-new Chart(ctx, {
-    type: 'bar',
-    data: {
-        labels: ['Jan 1','Jan 2','Jan 3','Jan 4','Jan 5','Jan 6','Jan 7'],
-        datasets: [
-            {
-                label: 'Income',
-                data: [500, 700, 600, 800, 750, 900, 1000],
-                backgroundColor: 'green'
-            },
-            {
-                label: 'Expenses',
-                data: [300, 400, 350, 500, 450, 600, 650],
-                backgroundColor: 'red'
-            }
-        ]
-    },
-    options: {
-        responsive: true,
-        plugins: {
-            legend: {
-                position: 'top'
-            }
-        }
-    }
+/* AUTO AMOUNT */
+qty.oninput = price.oninput = () => {
+amount.value = (qty.value * price.value) || 0;
+};
+
+/* ADD ENTRY */
+function addEntry(){
+if(!date.value || !particulars.value) return alert("Fill details");
+
+let entry={
+date:date.value,
+type:type.value,
+part:particulars.value,
+qty:Number(qty.value),
+price:Number(price.value),
+amount:Number(amount.value)
+};
+
+entries.push(entry);
+localStorage.setItem("entries", JSON.stringify(entries));
+
+render();
+}
+
+/* CALCULATE + RENDER */
+function render(){
+income=0; expense=0;
+
+entries.forEach(e=>{
+if(e.type==="income") income+=e.amount;
+else expense+=e.amount;
 });
 
-</script>
+incomeEl.innerText="₹"+income;
+expenseEl.innerText="₹"+expense;
+profitEl.innerText="₹"+(income-expense);
 
-</body>
-</html>
-<!-- TOP CARDS -->
-<div class="cards">
-
-<div class="card">
-<h4>Income</h4>
-<h2 class="green">₹ 2,34,000</h2>
-</div>
-
-<div cla
-<!-- ADD ENTRY -->
-<div class="card">
-<h3>Add Entry</h3>
-
-<input type="date" id="date">
-
-<select id="type">
-<option>Income</option>
-<option>Expense</option>
-</select>
-
-<select id="category" onchange="toggleEggInputs()">
-<option>Eggs</option>
-<option>Feed</option>
-<option>Medicine</option>
-<option>Other</option>
-</select>
-
-<div id="eggInputs">
-<input type="number" id="qty" placeholder="Egg Quantity">
-<input type="number" id="price" placeholder="Price per Egg">
-</div>
-
-<input type="number" id="amount" placeholder="Amount">
-
-<button onclick="addEntry()">Add Entry</button>
-</div>
-
-<!-- RECORDS -->
-<div class="card">
-<h3>Records</h3>
-<table id="records"></table>
-</div>
-
-<!-- ANALYTICS -->
-<div class="card">
-<h3>Advanced Analytics</h3>
-
-<p>Total Eggs Sold: <span id="totalEggs">0</span></p>
-<p>Egg Revenue: ₹<span id="eggRevenue">0</span></p>
-<p>Avg Egg Price: ₹<span id="avgEggPrice">0</span></p>
-
-<canvas id="trendChart"></canvas>
-</div>
-
-<!-- BIRD -->
-<div class="card">
-<h3>Bird Summary</h3>
-<input type="number" id="totalBirds" placeholder="Total Birds">
-<input type="number" id="deceased" placeholder="Deceased">
-<button onclick="saveBirds()">Save</button>
-
-<p>Total: <span id="bTotal">0</span></p>
-<p>Remaining: <span id="bRemain">0</span></p>
-</div>
-
-<!-- MEDICINE -->
-<div class="card">
-<h3>Medicine Log</h3>
-<input type="date" id="medDate">
-<input type="text" id="medName" placeholder="Medicine Name">
-<button onclick="addMed()">Add</button>
-<ul id="medList"></ul>
-</div>
-
-<!-- EXPORT -->
-<div class="card">
-<button onclick="exportPDF()">Export PDF</button>
-</div>
-
-<script>
-
-let data = JSON.parse(localStorage.getItem("farm")) || [];
-let meds = JSON.parse(localStorage.getItem("meds")) || [];
-
-function save(){
-localStorage.setItem("farm", JSON.stringify(data));
-localStorage.setItem("meds", JSON.stringify(meds));
-}
-
-function toggleEggInputs(){
-eggInputs.style.display = (category.value==="Eggs") ? "block":"none";
-amount.style.display = (category.value==="Eggs") ? "none":"block";
-}
-
-function addEntry(){
-
-let amt, q=0, p=0;
-
-if(category.value==="Eggs"){
-q=+qty.value;
-p=+price.value;
-amt=q*p;
-}else{
-amt=+amount.value;
-}
-
-data.push({date:date.value,type:type.value,category:category.value,amount:amt,qty:q});
-
-save();
-render();
-}
-
-function deleteEntry(i){
-data.splice(i,1);
-save();
-render();
-}
-
-function editEntry(i){
-let e=data[i];
-date.value=e.date;
-type.value=e.type;
-category.value=e.category;
-amount.value=e.amount;
-deleteEntry(i);
-toggleEggInputs();
-}
-
-function render(){
-
-let inc=0, exp=0;
-let totalEggs=0, eggRevenue=0;
-
-records.innerHTML="";
-
-data.forEach((e,i)=>{
-
-if(e.type==="Income") inc+=e.amount;
-else exp+=e.amount;
-
-if(e.category==="Eggs"){
-totalEggs+=e.qty || 0;
-eggRevenue+=e.amount;
-}
-
-records.innerHTML+=`
+/* TABLE */
+tableBody.innerHTML="";
+entries.forEach(e=>{
+tableBody.innerHTML+=`
 <tr>
 <td>${e.date}</td>
 <td>${e.type}</td>
+<td>${e.part}</td>
+<td>${e.qty}</td>
+<td>${e.price}</td>
 <td>${e.amount}</td>
-<td><button class="edit" onclick="editEntry(${i})">E</button></td>
-<td><button class="delete" onclick="deleteEntry(${i})">X</button></td>
 </tr>`;
 });
 
-let profitVal=inc-exp;
+/* WEEKLY GRAPH */
+let weeks={};
 
-income.innerText=inc;
-expense.innerText=exp;
-profit.innerText=profitVal;
-avgProfit.innerText=(data.length ? (profitVal/data.length).toFixed(0):0);
+entries.forEach(e=>{
+let week=new Date(e.date).getWeek();
+if(!weeks[week]) weeks[week]={inc:0,exp:0};
 
-document.getElementById("totalEggs").innerText=totalEggs;
-document.getElementById("eggRevenue").innerText=eggRevenue;
-avgEggPrice.innerText=(totalEggs? (eggRevenue/totalEggs).toFixed(2):0);
+if(e.type==="income") weeks[week].inc+=e.amount;
+else weeks[week].exp+=e.amount;
+});
 
-drawCharts(inc,exp);
-drawTrend();
+chart.data.labels=Object.keys(weeks);
+chart.data.datasets[0].data=Object.values(weeks).map(w=>w.inc);
+chart.data.datasets[1].data=Object.values(weeks).map(w=>w.exp);
+chart.update();
 }
 
-function drawCharts(inc,exp){
+/* WEEK FUNCTION */
+Date.prototype.getWeek=function(){
+let d=new Date(this.getFullYear(),0,1);
+return Math.ceil((((this-d)/86400000)+d.getDay()+1)/7);
+};
 
-if(window.bar) window.bar.destroy();
-if(window.pie) window.pie.destroy();
-
-window.bar = new Chart(barChart,{
-type:'bar',
+let chart=new Chart(document.getElementById("chart"),{
+type:"bar",
 data:{
-labels:['Income','Expense'],
-datasets:[{
-data:[inc,exp],
-backgroundColor:['#00b894','#d63031']
-}]
+labels:[],
+datasets:[
+{label:"Income",data:[],backgroundColor:"black"},
+{label:"Expenses",data:[],backgroundColor:"red"}
+]
 }
 });
 
-window.pie = new Chart(pieChart,{
-type:'doughnut',
-data:{
-labels:['Income','Expense'],
-datasets:[{
-data:[inc,exp],
-backgroundColor:['#00b894','#d63031']
-}]
-}
-});
-
-}
-
-function drawTrend(){
-
-if(window.trend) window.trend.destroy();
-
-let last7=data.slice(-7);
-let labels=last7.map(e=>e.date);
-let values=last7.map(e=>e.amount);
-
-window.trend = new Chart(trendChart,{
-type:'line',
-data:{labels:labels,datasets:[{data:values}]}
-});
-}
-
-function saveBirds(){
-let total=+totalBirds.value;
-let dead=+deceased.value;
-bTotal.innerText=total;
-bRemain.innerText=total-dead;
-}
-
-function addMed(){
-meds.push({date:medDate.value,name:medName.value});
-medList.innerHTML+=`<li>${medDate.value} - ${medName.value}</li>`;
-save();
-}
-
-function exportPDF(){
-const {jsPDF}=window.jspdf;
+/* PDF */
+function downloadPDF(){
+const { jsPDF } = window.jspdf;
 let doc=new jsPDF();
 
-doc.text("GK Farm Report",10,10);
+doc.text("GK FARM HOUSE REPORT",20,20);
 
-let y=20;
-data.forEach(e=>{
-doc.text(`${e.date} - ${e.category} - ${e.amount}`,10,y);
+doc.text(`Income: ₹${income}`,20,40);
+doc.text(`Expense: ₹${expense}`,20,50);
+doc.text(`Profit: ₹${income-expense}`,20,60);
+
+let y=80;
+entries.forEach(e=>{
+doc.text(`${e.date} ${e.type} ${e.part} ₹${e.amount}`,20,y);
 y+=8;
 });
-
-doc.text("Profit: "+(income.innerText-expense.innerText),10,y+10);
 
 doc.save("Farm_Report.pdf");
 }
 
 render();
-
 </script>
 
 </body>
