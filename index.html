@@ -3,236 +3,315 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GK Farm House PRO</title>
+<title>GK Farm House ULTRA</title>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <style>
 body {
+    margin:0;
     font-family: 'Segoe UI', sans-serif;
-    margin: 0;
-    background: #0f172a;
-    color: white;
+    background: linear-gradient(135deg,#020617,#0f172a,#020617);
+    color:white;
 }
 
-.header {
-    display: flex;
-    align-items: center;
-    padding: 15px;
-    background: #020617;
+/* Sidebar */
+.sidebar {
+    width:230px;
+    height:100vh;
+    position:fixed;
+    background:rgba(255,255,255,0.05);
+    backdrop-filter: blur(20px);
+    padding:20px;
+    border-right:1px solid rgba(255,255,255,0.1);
 }
-.header img { width: 50px; margin-right: 10px; }
+.sidebar h2 { color:#22c55e; }
+.sidebar button {
+    width:100%;
+    margin-top:12px;
+    padding:12px;
+    border:none;
+    border-radius:10px;
+    background:rgba(255,255,255,0.08);
+    color:white;
+    cursor:pointer;
+}
+.sidebar button:hover {
+    background:#22c55e;
+    transform:scale(1.05);
+}
 
-.container { padding: 15px; }
+/* Main */
+.main { margin-left:250px; padding:25px; }
 
-.cards { display: flex; gap: 10px; flex-wrap: wrap; }
-
+/* Cards */
+.cards { display:flex; gap:20px; flex-wrap:wrap; }
 .card {
-    flex: 1;
-    padding: 15px;
-    border-radius: 12px;
-    text-align: center;
-    font-weight: bold;
+    flex:1;
+    padding:20px;
+    border-radius:15px;
+    text-align:center;
+    background:rgba(255,255,255,0.05);
+}
+.profit { border-left:5px solid #10b981; }
+.income { border-left:5px solid #f59e0b; }
+.expense { border-left:5px solid #ef4444; }
+
+/* Inputs */
+input,select,button {
+    width:100%;
+    padding:12px;
+    margin:6px 0;
+    border:none;
+    border-radius:10px;
 }
 
-.profit { background: #065f46; }
-.income { background: #92400e; }
-.expense { background: #7f1d1d; }
+/* Sections */
+.section { display:none; }
+.active { display:block; }
 
-.form, .birds {
-    margin-top: 20px;
-    background: #020617;
-    padding: 15px;
-    border-radius: 12px;
-}
+/* Table */
+table { width:100%; margin-top:15px; }
+td,th { padding:12px; text-align:center; }
 
-input, select {
-    width: 100%;
-    padding: 10px;
-    margin: 5px 0;
-    border-radius: 8px;
-    border: none;
-    background: #1e293b;
-    color: white;
-}
-
-button {
-    background: #2563eb;
-    padding: 10px;
-    border: none;
-    width: 100%;
-    border-radius: 10px;
-    color: white;
-    margin-top: 10px;
-}
-
-table {
-    width: 100%;
-    margin-top: 20px;
-    border-collapse: collapse;
-}
-th, td {
-    padding: 10px;
-    border-bottom: 1px solid #1e293b;
-    text-align: center;
+/* Bird Cards */
+.bird-card {
+    background:rgba(255,255,255,0.05);
+    padding:15px;
+    border-radius:12px;
+    margin-top:10px;
 }
 </style>
 </head>
 
 <body>
 
-<div class="header">
-    <img src="https://cdn-icons-png.flaticon.com/512/616/616408.png">
-    <h2>GK FARM HOUSE</h2>
+<div class="sidebar">
+    <h2>GK FARM</h2>
+    <button onclick="show('dashboard')">Dashboard</button>
+    <button onclick="show('entries')">Entries</button>
+
+    <!-- NEW BUTTON -->
+    <button onclick="show('bird')">Bird Count</button>
+
+    <button onclick="downloadPDF()">Export PDF</button>
 </div>
 
-<div class="container">
+<div class="main">
 
-<div class="cards">
-    <div class="card profit">Net Profit <h2 id="profit">₹0</h2></div>
-    <div class="card income">Income <h2 id="income">₹0</h2></div>
-    <div class="card expense">Expenses <h2 id="expense">₹0</h2></div>
+<!-- DASHBOARD -->
+<div id="dashboard" class="section active">
+    <div class="cards">
+        <div class="card profit">Profit <h2 id="profit"></h2></div>
+        <div class="card income">Income <h2 id="income"></h2></div>
+        <div class="card expense">Expense <h2 id="expense"></h2></div>
+    </div>
+
+    <canvas id="mainChart"></canvas>
 </div>
 
-<canvas id="chart"></canvas>
+<!-- ENTRIES -->
+<div id="entries" class="section">
+    <h3>Add Entry</h3>
 
-<div class="form">
-    <h3>Entries</h3>
     <input type="date" id="date">
     <select id="type">
         <option value="income">Income</option>
         <option value="expense">Expense</option>
     </select>
+
     <input type="text" id="particulars" placeholder="Particulars">
-    <input type="number" id="qty" placeholder="Egg Quantity">
-    <input type="number" id="price" placeholder="Price per Egg">
-    <input type="number" id="amount" placeholder="Amount" readonly>
+    <input type="number" id="qty" placeholder="Qty">
+    <input type="number" id="price" placeholder="Price">
+    <input type="number" id="amount" readonly placeholder="Auto Amount">
+
     <button onclick="addEntry()">Add Entry</button>
+
+    <table>
+        <thead>
+        <tr>
+            <th>Date</th><th>Type</th><th>Part</th><th>Amt</th><th>Action</th>
+        </tr>
+        </thead>
+        <tbody id="table"></tbody>
+    </table>
 </div>
 
-<table>
-<thead>
-<tr>
-<th>Date</th><th>Type</th><th>Particulars</th>
-<th>Qty</th><th>Price</th><th>Amount</th>
-</tr>
-</thead>
-<tbody id="tableBody"></tbody>
-</table>
+<!-- 🔥 BIRD COUNT SECTION -->
+<div id="bird" class="section">
+    <h2 style="color:#22c55e;">Bird Count</h2>
 
-<div class="birds">
-    <h3>Bird Count</h3>
-    <input type="number" id="totalBirds" placeholder="Total Birds">
-    <input type="number" id="adult" placeholder="Adults">
-    <input type="number" id="chicks" placeholder="Chicks">
-    <input type="number" id="mortality" placeholder="Mortality">
-    <input type="number" id="sale" placeholder="Sale">
+    <div class="bird-card">
+        <label>Total Birds</label>
+        <input type="number" id="totalBirds">
+    </div>
+
+    <div class="bird-card">
+        <label>Total Chicks</label>
+        <input type="number" id="totalChicks">
+    </div>
+
+    <div class="bird-card">
+        <label>Laying Eggs</label>
+        <input type="number" id="laying" oninput="calcBirds()">
+    </div>
+
+    <div class="bird-card">
+        <label>Not Laying Eggs</label>
+        <input type="number" id="notLaying" readonly>
+    </div>
+
+    <button onclick="saveBird()">Save Bird Data</button>
 </div>
-
-<button onclick="downloadPDF()">Download Full Report PDF</button>
 
 </div>
 
 <script>
-let income = 0, expense = 0, entries = [];
+let entries = JSON.parse(localStorage.getItem("entries")) || [];
+let editId = null;
 
-document.getElementById("qty").addEventListener("input", calc);
-document.getElementById("price").addEventListener("input", calc);
+qty.oninput = calc;
+price.oninput = calc;
 
-function calc() {
-    let q = qty.value, p = price.value;
-    amount.value = q * p || 0;
+function calc(){
+    amount.value = (qty.value * price.value) || 0;
 }
 
-function addEntry() {
-    let data = {
-        date: date.value,
-        type: type.value,
-        part: particulars.value,
-        qty: qty.value,
-        price: price.value,
-        amount: Number(amount.value)
-    };
-
-    entries.push(data);
-
-    if(data.type === "income") income += data.amount;
-    else expense += data.amount;
-
-    updateUI();
+function show(sec){
+    document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
+    document.getElementById(sec).classList.add("active");
 }
 
-function updateUI() {
-    incomeEl = document.getElementById("income");
-    expenseEl = document.getElementById("expense");
-    profitEl = document.getElementById("profit");
+function addEntry(){
 
-    incomeEl.innerText = "₹" + income;
-    expenseEl.innerText = "₹" + expense;
-    profitEl.innerText = "₹" + (income - expense);
+    if(editId){
+        entries = entries.map(e=>{
+            if(e.id===editId){
+                e.date=date.value;
+                e.type=type.value;
+                e.part=particulars.value;
+                e.amount=Number(amount.value);
+            }
+            return e;
+        });
+        editId=null;
+    } else {
+        entries.push({
+            id:Date.now(),
+            date:date.value,
+            type:type.value,
+            part:particulars.value,
+            amount:Number(amount.value)
+        });
+    }
 
-    let body = document.getElementById("tableBody");
-    body.innerHTML = "";
-    entries.forEach(e => {
-        body.innerHTML += `
+    save();
+}
+
+function editEntry(id){
+    let e = entries.find(x=>x.id===id);
+    date.value=e.date;
+    type.value=e.type;
+    particulars.value=e.part;
+    amount.value=e.amount;
+    editId=id;
+}
+
+function deleteEntry(id){
+    entries = entries.filter(e=>e.id!==id);
+    save();
+}
+
+function save(){
+    localStorage.setItem("entries", JSON.stringify(entries));
+    update();
+}
+
+function update(){
+
+    let inc=0, exp=0;
+    table.innerHTML="";
+
+    entries.forEach(e=>{
+        if(e.type=="income") inc+=e.amount;
+        else exp+=e.amount;
+
+        table.innerHTML+=`
         <tr>
         <td>${e.date}</td>
         <td>${e.type}</td>
         <td>${e.part}</td>
-        <td>${e.qty}</td>
-        <td>${e.price}</td>
-        <td>${e.amount}</td>
+        <td>₹${e.amount}</td>
+        <td>
+            <button onclick="editEntry(${e.id})">✏</button>
+            <button onclick="deleteEntry(${e.id})">🗑</button>
+        </td>
         </tr>`;
     });
 
-    chart.data.datasets[0].data[0] = income;
-    chart.data.datasets[1].data[0] = expense;
-    chart.update();
+    income.innerText="₹"+inc;
+    expense.innerText="₹"+exp;
+    profit.innerText="₹"+(inc-exp);
+
+    mainChart.data.labels=["Income","Expense"];
+    mainChart.data.datasets[0].data=[inc,exp];
+    mainChart.update();
 }
 
-let chart = new Chart(document.getElementById("chart"), {
-    type: 'bar',
-    data: {
-        labels: ['Weekly'],
-        datasets: [
-            { label: 'Income', data: [0], backgroundColor: 'black' },
-            { label: 'Expenses', data: [0], backgroundColor: 'red' }
-        ]
+let mainChart = new Chart(document.getElementById("mainChart"),{
+    type:'bar',
+    data:{
+        labels:[],
+        datasets:[{data:[],backgroundColor:["green","red"]}]
     }
 });
 
-/* PDF EXPORT */
-function downloadPDF() {
-    const { jsPDF } = window.jspdf;
-    let doc = new jsPDF();
+update();
 
-    doc.setFontSize(18);
-    doc.text("GK FARM HOUSE REPORT", 20, 20);
+/* 🐔 BIRD LOGIC */
+function calcBirds(){
+    let total = Number(totalBirds.value) || 0;
+    let layingVal = Number(laying.value) || 0;
+    let notLay = total - layingVal;
+    if(notLay < 0) notLay = 0;
+    notLaying.value = notLay;
+}
 
-    doc.setFontSize(12);
-    doc.text(`Income: ₹${income}`, 20, 40);
-    doc.text(`Expenses: ₹${expense}`, 20, 50);
-    doc.text(`Net Profit: ₹${income - expense}`, 20, 60);
+function saveBird(){
+    let data = {
+        total: totalBirds.value,
+        chicks: totalChicks.value,
+        laying: laying.value,
+        notLaying: notLaying.value
+    };
+    localStorage.setItem("birds", JSON.stringify(data));
+    alert("Saved!");
+}
 
-    doc.text("Bird Details:", 20, 80);
-    doc.text(`Total: ${totalBirds.value}`, 20, 90);
-    doc.text(`Adults: ${adult.value}`, 20, 100);
-    doc.text(`Chicks: ${chicks.value}`, 20, 110);
-    doc.text(`Mortality: ${mortality.value}`, 20, 120);
-    doc.text(`Sale: ${sale.value}`, 20, 130);
+function loadBird(){
+    let data = JSON.parse(localStorage.getItem("birds"));
+    if(data){
+        totalBirds.value=data.total;
+        totalChicks.value=data.chicks;
+        laying.value=data.laying;
+        notLaying.value=data.notLaying;
+    }
+}
 
-    let y = 150;
-    doc.text("Entries:", 20, y);
-    y += 10;
+loadBird();
 
-    entries.forEach(e => {
-        doc.text(
-            `${e.date} | ${e.type} | ${e.part} | ₹${e.amount}`,
-            20,
-            y
-        );
-        y += 10;
+/* PDF */
+function downloadPDF(){
+    const {jsPDF}=window.jspdf;
+    let doc=new jsPDF();
+
+    doc.text("GK FARM REPORT",20,20);
+
+    let y=30;
+    entries.forEach(e=>{
+        doc.text(`${e.date} | ${e.type} | ${e.part} | ₹${e.amount}`,20,y);
+        y+=10;
     });
 
     doc.save("GK_Farm_Report.pdf");
